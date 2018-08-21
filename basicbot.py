@@ -19,6 +19,24 @@ def handle_data(context, data):
     print('Poloniex: {}'.format(poloneix_price))
     print('bitfinex: {}'.format(bitfinex_price))
 
+    if(poloneix_price > bitfinex_price):
+        print("Buy on Bittex  -> sell on bitfinex ")
+        order(asset=context.bitfinex_trading_pair,
+              amount=1,
+              limit_price=bitfinex_price)
+
+        order(asset=context.poloniex_trading_pair,
+              amount=-1,
+              limit_price=poloneix_price)
+
+    elif (bitfinex_price > poloneix_price):
+        order(asset=context.bitfinex_trading_pair,
+              amount=-1,
+              limit_price=bitfinex_price)
+        order(asset=context.poloniex_trading_pair,
+              amount=1,
+              limit_price=poloneix_price)
+
 
 def analyze(context, perf):
     #
