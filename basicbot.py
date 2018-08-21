@@ -1,25 +1,37 @@
+from catalyst.api import symbol, order
 from catalyst.utils.run_algo import run_algorithm
-from catalyst.api import symbol
 import pandas as pd
 
 
-def initialize(context):
-    context.bittrex = context.exchanges['bitfinex']
+def initialze(context):
+    context.bitfinex = context.exchanges['bitfinex']
     context.poloniex = context.exchanges['poloniex']
 
-    context.bittrex_trading_pair = symbol('eth_btc', context.bittrex.name)
+    context.bitfinex_trading_pair = symbol('eth_btc', context.bitfinex.name)
     context.poloniex_trading_pair = symbol('eth_btc', context.poloniex.name)
 
 
+def handle_data(context, data):
+    poloneix_price = data.current(context.poloniex_trading_pair, 'price')
+    bitfinex_price = data.current(context.bitfinex_trading_pair, 'price')
 
-run_algorithm(initialize=initialize,
+    print('Date: {}'.format(data.current_dt))
+    print('Poloniex: {}'.format(poloneix_price))
+    print('bitfinex: {}'.format(bitfinex_price))
+
+
+def analyze(context, perf):
+    # TODO: Next tutorial
+    pass
+
+
+perf = run_algorithm(capital_base=100,
+              initialize=initialze,
               handle_data=handle_data,
               analyze=analyze,
-              capital_base=100,
               live=False,
-              base_currency='btc',
+              #base_currency='btc',
               exchange_name='bitfinex, poloniex',
-                data_frequency='minute',
-                               start=pd.to_datetime('2018-05-05', utc=True),
-                               end=pd.to_datetime('2018-07-22', utc=True))
-
+              data_frequency='minute',
+              start=pd.to_datetime('2017-12-12', utc=True),
+              end=pd.to_datetime('2017-12-12', utc=True))
