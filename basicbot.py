@@ -25,7 +25,7 @@ def get_adjusted_prices(price, slippage):
     adj_buy_price = price * (1 + slippage)
     return adj_sell_price, adj_buy_price
 
-
+# Init
 def initialize(context):
     context.bitfinex = context.exchanges['bitfinex']
     context.poloniex = context.exchanges['poloniex']
@@ -34,10 +34,11 @@ def initialize(context):
     context.poloniex_trading_pair = symbol('eth_btc', context.poloniex.name)  #  btc_usd , btc_usdt
 
 
+# Execute on each bar
 def handle_data(context, data):
     poloneix_price = data.current(context.poloniex_trading_pair, 'price')
     bitfinex_price = data.current(context.bitfinex_trading_pair, 'price')
-    slippage = 0.03
+    slippage = 0.04
     sell_p, buy_p = get_adjusted_prices(poloneix_price, slippage)
     sell_b, buy_p = get_adjusted_prices(bitfinex_price, slippage)
 
@@ -81,3 +82,4 @@ perf = run_algorithm(capital_base=10,
               data_frequency='minute',
               start=pd.to_datetime('2017-12-12', utc=True),
               end=pd.to_datetime('2017-12-12', utc=True))
+
