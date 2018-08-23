@@ -3,6 +3,9 @@ from catalyst.utils.run_algo import run_algorithm
 import pandas as pd
 from catalyst.exchange.utils.stats_utils import extract_transactions
 import numpy as np
+import matplotlib.pyplot as plt
+
+i = 0
 
 
 def is_profitable_after_fees(sell_price, buy_price, sell_market, buy_market):
@@ -10,10 +13,13 @@ def is_profitable_after_fees(sell_price, buy_price, sell_market, buy_market):
     buy_fee = get_fee(buy_market, buy_price)
     expected_profit = sell_price - buy_price - sell_fee - buy_fee
 
+
     if expected_profit > 0:
         print("Sell {} at {}, Buy {} at {}".format(sell_market.name, sell_price, buy_market.name, buy_price))
         print("Total fees: {}".format(buy_fee + sell_fee))
         print("Expected profit: {}".format(expected_profit))
+        i = + 1
+        print("Ammount of trades: {}".format(i))
         return True
     return False
 
@@ -33,29 +39,32 @@ def get_adjusted_prices(price, slippage):
 def initialize(context):
     context.bitfinex = context.exchanges['bitfinex']
     context.poloniex = context.exchanges['poloniex']
+    context.binance = context.exchanges['binance']
 
     context.bitfinex_trading_pair = symbol('eth_btc', context.bitfinex.name)
     context.poloniex_trading_pair = symbol('eth_btc', context.poloniex.name)  #  btc_usd , btc_usdt
-
+    context.binance_trading_pair = symbol('eth_btc', context.binance.name)
+    context.i = 0
 
 # Execute on each bar
 def handle_data(context, data):
 
     poloneix_price = data.current(context.poloniex_trading_pair, 'price')
     bitfinex_price = data.current(context.bitfinex_trading_pair, 'price')
-    slippage = 0.04
+    binance_price = data.current(context.binance_trading_pair, 'price')
+
+    slippage = 0.035
     sell_p, buy_p = get_adjusted_prices(poloneix_price, slippage)
     sell_b, buy_p = get_adjusted_prices(bitfinex_price, slippage)
 
-    price = data.current(context.asset, 'price')
-    record(price=price,
-           cash=context.portfolio.cash)
-
+    #price = data.current(context.bitfinex_price, 'price')
+    #record(price=price,
+          # cash=context.portfolio.cash)
 
     if is_profitable_after_fees(sell_p, buy_p, context.poloniex, context.bitfinex):
 
         print('Date: {}'.format(data.current_dt))
-        print('Bitfinex Price: {}, Poloniex Price: {}'.format(bitfinex_price, poloneix_price))
+        print('Bitfinex Price: {}, Poloniex Price: {}, Binance Price: {}'.format(bitfinex_price, poloneix_price, binance_price))
 
         order(asset=context.bitfinex_trading_pair,
               amount=1,
@@ -67,7 +76,7 @@ def handle_data(context, data):
 
     elif is_profitable_after_fees(sell_b, buy_p, context.bitfinex, context.poloniex):
         print('Date: {}'.format(data.current_dt))
-        print('Bitfinex Price: {}, Poloniex Price: {}'.format(bitfinex_price, poloneix_price))
+        print('Bitfinex Price: {}, Poloniex Price: {}, Binance Price: {}'.format(bitfinex_price, poloneix_price,binance_price))
         order(asset=context.poloniex_trading_pair,
               amount=-1,
               limit_price=buy_p)
@@ -78,7 +87,7 @@ def handle_data(context, data):
 
 # Analyze data - Portfolio - X-Y plots  +/-
 def analyze(context, perf):
-    import matplotlib.pyplot as plt
+
     # Get the base_currency that was passed as a parameter to the simulation
     exchange = list(context.exchanges.values())[0]
     quote_currency = exchange.quote_currency.upper()
@@ -139,7 +148,7 @@ if __name__ == '__main__':
               analyze=analyze,
               live=False,
               quote_currency='usdt',
-              exchange_name='bitfinex, poloniex',
+              exchange_name='bitfinex, poloniex, binance',
               algo_namespace='Cryptoonite',
               data_frequency='minute',
               start=pd.to_datetime('2018-08-01', utc=True),

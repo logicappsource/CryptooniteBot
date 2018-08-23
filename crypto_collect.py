@@ -107,6 +107,7 @@ def handle_data(context, data):
 
             # -------------------------------------------------------------
             # --------------- Insert Your Strategy Here -------------------
+            # get Markcap ---- get 24h Volume    - Btc dominaance to build strategy- take the top 10 % gains -> buy altcoins
             # -------------------------------------------------------------
 
 

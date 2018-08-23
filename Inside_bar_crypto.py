@@ -40,12 +40,14 @@ def handle_data(context, data):
     signal = inside_bar_signal(high_history, low_history)
     if signal == 1:
         # Bull break
-        print("Bull break")
+        print("Bull break", price)
         order_target_percent(context.asset, 1)
+      #  stop_loss_bull()
     elif signal == -1:
         # Bear break
-        print("Bear break")
+        print("Bear break", price)
         order_target_percent(context.asset, 0)
+        #stop_loss_bear()
     record(open=open,
            high=high,
            low=low,
@@ -53,6 +55,14 @@ def handle_data(context, data):
            volume=volume,
            price=price,
            signal=signal)
+
+
+#def stop_loss_bull(context, data):
+    #print('stop loss bear price. {}')
+    #
+
+#def stop_loss_bear(context, data):
+   # print('stop loss bear price. {}')
 
 
 def analyze(context, perf):
@@ -93,9 +103,11 @@ def inside_bar_signal(highs, lows):
             return 0
         if highs[2] > highs[1]:
             # Bull signal
+                  # - Bottom of first [1]
             return 1
         elif lows[2] < lows[1]:
             # Bear signal
+                  # - lows[1]
             return -1
         # No signal, still inside
     return 0
